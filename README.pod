@@ -1,0 +1,81 @@
+=head1 AutoPot
+
+=head2 Workflows
+
+=head3 Tea
+
+=over 2
+
+=item 1. Heat left till "near" C<$x> temp while stirring
+
+=item 2. Heat left slower till at C<$x> temp while stirring
+
+=item 3. Pump left to right
+
+=item 4. Maintain heat C<$x> for C<$y> seconds while stirring
+
+=item 5. Pump right to left
+
+=item 6. Maintain heat C<$x> till empty
+
+=back
+
+=head3 Coffee
+
+=over 2
+
+=item 1. Heat left till "near" C<$x> temp while stirring
+
+=item 2. Heat left slower till at C<$x> temp while stirring
+
+=item 3. Pump left to right
+
+=item 4. Maintain heat C<$x> for C<$y> seconds while stirring
+
+=item 5. Pump right to left
+
+=item 6. Maintain heat C<$x> till empty
+
+=back
+
+=head3 Powdered Chai
+
+=over 2
+
+=item 1. Cool left till "near" C<$x> temp while stirring
+
+=item 2. Cool left slower till at C<$x> temp while stirring
+
+=item 3. Maintain cold C<$x> till empty while stirring
+
+=back
+
+=head3 Cocoa
+
+=over 2
+
+=item 1. Heat left till "near" C<$x> temp while stirring
+
+=item 2. Heat left slower till at C<$x> temp while stirring
+
+=item 3. Maintain heat C<$x> till empty while stirring
+
+=back
+
+=head3 Cleaning
+
+=over 2
+
+=item 1. Heat left till "near" C<$x> temp while stirring
+
+=item 2. Maintain heat C<$x> for C<$y> seconds while stirring
+
+=item 3. Pump left to right
+
+=item 4. Maintain heat C<$x> for C<$y> seconds while stirring
+
+=item 5. Pump right to left
+
+=back
+
+Repeat steps 2-5 till user turns off.
