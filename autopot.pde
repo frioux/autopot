@@ -1,5 +1,6 @@
 #include <avr/pgmspace.h>
 
+// {{{ constants
 const int HEATER_LEFT = 9;
 const int HEATER_RIGHT = 7;
 
@@ -13,8 +14,9 @@ const int STIRRER_RIGHT = 3;
 
 const bool LEFT = false;
 const bool RIGHT = true;
+// }}}
 
-
+// {{{ Global state
 int state = 1;
 
 // safety temp should be calculated by looking at the
@@ -30,6 +32,7 @@ int last_pump_switch;
 int curr_temp;
 int curr_millis;
 int state_switch_time;
+// }}}
 
 void on(int pin) { // {{{
   digitalWrite(pin, HIGH);
