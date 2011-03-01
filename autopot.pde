@@ -112,35 +112,43 @@ void setState(int new_state) { // {{{
   off(PUMP_RIGHT);
 } // }}}
 
-void loop() { // {{{
-  curr_temp = analogRead(A0) / 4; // max 256
-  curr_millis = millis();
+void tea_or_coffee(int final_temp, int steep_time) { // {{{
+  // these will probably be proportional
+  int threshold = final_temp - 20;
+  int pump_time = 5000;
+
   // Heat left while stirring
   if (state == 1) {
-     maintainHeater(212, 190, 100, LEFT);
+     maintainHeater(final_temp, threshold, 100, LEFT);
      maintainStirrer(200, LEFT);
      // Until we reach 212
-     if (curr_temp >= 212) setState(state + 1);
+     if (curr_temp >= final_temp) setState(state + 1);
   // Pump left to right
   } else if (state == 2) {
      maintainPump(50, LEFT, RIGHT);
      // for 5 seconds
-     if (curr_millis - state_switch_time > 5000) setState(state + 1);
+     if (curr_millis - state_switch_time > pump_time) setState(state + 1);
   // Maintain heat right while stirring
   } else if (state == 3) {
-     maintainHeater(212, 190, 100, RIGHT);
+     maintainHeater(final_temp, threshold, 100, RIGHT);
      maintainStirrer(200, RIGHT);
      // for 10 seconds
-     if (curr_millis - state_switch_time > 10000) setState(state + 1);
+     if (curr_millis - state_switch_time > steep_time) setState(state + 1);
   // Pump right to left
   } else if (state == 4) {
      maintainPump(50, RIGHT, LEFT);
      // for 5 seconds
-     if (curr_millis - state_switch_time > 5000) setState(state + 1);
+     if (curr_millis - state_switch_time > pump_time) setState(state + 1);
   } else if (state == 5) {
   // Maintain heat right while stirring
-     maintainHeater(212, 190, 100, LEFT);
+     maintainHeater(final_temp, threshold, 100, LEFT);
   }
+} // }}}
+
+void loop() { // {{{
+  curr_temp = analogRead(A0) / 4; // max 256
+  curr_millis = millis();
+  tea_or_coffee(212, 10000);
 } // }}}
 
 // vim: ft=arduino foldmethod=marker
