@@ -27,8 +27,8 @@ bool pump_on;
 int last_heat_switch;
 int last_stir_switch;
 int last_pump_switch;
-int curr_temp = analogRead(A0) / 4; // max 256
-int curr_millis = millis();
+int curr_temp;
+int curr_millis;
 int state_switch_time;
 
 void on(int pin) { // {{{
@@ -47,7 +47,6 @@ void setup() { // {{{
   pinMode(STIRRER_LEFT, OUTPUT);
   pinMode(STIRRER_RIGHT, OUTPUT);
   pinMode(PUMP_RIGHT, OUTPUT);
-  last_heat_switch = millis();
 } // }}}
 
 void maintainStirrer(int oscillation_time, bool side) { // {{{
@@ -145,10 +144,27 @@ void tea_or_coffee(int final_temp, int steep_time) { // {{{
   }
 } // }}}
 
+void cocoa(int final_temp) { // {{{
+  // these will probably be proportional
+  int threshold = final_temp - 20;
+  int pump_time = 5000;
+
+  // Pump left to right
+  if (state == 1) {
+     maintainPump(50, LEFT, RIGHT);
+     // for 5 seconds
+     if (curr_millis - state_switch_time > pump_time) setState(state + 1);
+  // Maintain heat right while stirring
+  } else if (state == 2) {
+     maintainHeater(final_temp, threshold, 100, RIGHT);
+     maintainStirrer(200, RIGHT);
+  }
+} // }}}
+
 void loop() { // {{{
   curr_temp = analogRead(A0) / 4; // max 256
   curr_millis = millis();
-  tea_or_coffee(212, 10000);
+  cocoa(200);
 } // }}}
 
 // vim: ft=arduino foldmethod=marker
