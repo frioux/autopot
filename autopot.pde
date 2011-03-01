@@ -1,19 +1,37 @@
 #include <avr/pgmspace.h>
 
-int PROGMEM heater_left = 9;
-int PROGMEM heater_right =7;
+const int heater_left PROGMEM = 9;
+const int heater_right =7;
 
-int PROGMEM cooler_right = 8;
+const int cooler_right = 8;
 
-int PROGMEM pump_left = 6;
-int PROGMEM pump_right = 4;
+const int pump_left = 6;
+const int pump_right = 4;
 
-int PROGMEM stirrer_left = 5;
-int PROGMEM stirrer_right = 3;
-int delay_ms = 50;
+const int stirrer_left = 5;
+const int stirrer_right = 3;
+const int delay_ms = 50;
+
+const int dest_temp = 500;
+const int oscillation_time = 50;
+
+// safety temp should be calculated by looking at the
+// amount of water.  Less water == higher safety
+const int safety_temp = 200;
+
+int threshold = dest_temp - safety_temp;
+
+int last_switch;
+
+void on(int pin) {
+  digitalWrite(pin, HIGH);
+}
+
+void off(int pin) {
+  digitalWrite(pin, LOW);
+}
 
 void setup() {
-  Serial.begin(9600);
   pinMode(heater_left, OUTPUT);
   pinMode(cooler_right, OUTPUT);
   pinMode(heater_right, OUTPUT);
@@ -21,40 +39,32 @@ void setup() {
   pinMode(stirrer_left, OUTPUT);
   pinMode(stirrer_right, OUTPUT);
   pinMode(pump_right, OUTPUT);
+  last_switch = millis();
 }
 
-void fasterer() {
-  delay_ms = 50 + 50*((float)analogRead(A0)/1024);
-}
-
-void on(int pin) {
-  delay(delay_ms);
-  digitalWrite(pin, HIGH);
-  fasterer();
-}
-
-void off(int pin) {
-  delay(delay_ms);
-  digitalWrite(pin, LOW);
-  fasterer();
-}
+bool heater_left_on;
 
 void loop() {
-  on(heater_left);
-  on(cooler_right);
-  on(heater_right);
-  on(pump_left);
-  on(stirrer_right);
-  on(stirrer_left);
-  on(pump_right);
-
-  off(heater_left);
-  off(cooler_right);
-  off(heater_right);
-  off(pump_left);
-  off(stirrer_right);
-  off(stirrer_left);
-  off(pump_right);
+  int currTemp = analogRead(A0);
+  int currMillis = millis();
+  if (currTemp < threshold) {
+    on(heater_left);
+    heater_left_on = true;
+  } else if (currTemp < dest_temp) {
+    if (abs( currMillis - last_switch ) > oscillation_time) {
+      last_switch = currMillis;
+      if (heater_left_on) {
+         off(heater_left);
+         heater_left_on = false;
+      } else {
+         on(heater_left);
+         heater_left_on = true;
+      }
+    }
+  } else {
+    off(heater_left);
+    heater_left_on = false;
+  }
 }
 
 // vim: ft=arduino
