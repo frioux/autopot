@@ -1,6 +1,6 @@
 =head1 AutoPot
 
-=head2 Workflows
+=head2 Plans
 
 =head3 Tea
 

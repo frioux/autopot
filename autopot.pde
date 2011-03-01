@@ -10,28 +10,29 @@ const int pump_right = 4;
 
 const int stirrer_left = 5;
 const int stirrer_right = 3;
-const int delay_ms = 50;
 
-const int dest_temp = 500;
-const int oscillation_time = 50;
+const bool left = false;
+const bool right = true;
+
+bool heater_on;
+bool stirrer_on;
 
 // safety temp should be calculated by looking at the
 // amount of water.  Less water == higher safety
-const int safety_temp = 200;
+/*const int safety_temp = 200;*/
 
-int threshold = dest_temp - safety_temp;
+int last_heat_switch;
+int last_stir_switch;
 
-int last_switch;
-
-void on(int pin) {
+void on(int pin) { // {{{
   digitalWrite(pin, HIGH);
-}
+} // }}}
 
-void off(int pin) {
+void off(int pin) { // {{{
   digitalWrite(pin, LOW);
-}
+} // }}}
 
-void setup() {
+void setup() { // {{{
   pinMode(heater_left, OUTPUT);
   pinMode(cooler_right, OUTPUT);
   pinMode(heater_right, OUTPUT);
@@ -39,32 +40,50 @@ void setup() {
   pinMode(stirrer_left, OUTPUT);
   pinMode(stirrer_right, OUTPUT);
   pinMode(pump_right, OUTPUT);
-  last_switch = millis();
-}
+  last_heat_switch = millis();
+} // }}}
 
-bool heater_left_on;
+void maintain_stirrer(int currMillis, int oscillation_time, bool side) { // {{{
+   int stirrer = (side == left ? stirrer_left : stirrer_right );
+   if (abs( currMillis - last_stir_switch ) > oscillation_time) {
+     last_stir_switch = currMillis;
+     if (stirrer_on) {
+        off(stirrer);
+        stirrer_on = false;
+     } else {
+        on(stirrer);
+        stirrer_on = true;
+     }
+   }
+} // }}}
 
-void loop() {
-  int currTemp = analogRead(A0);
-  int currMillis = millis();
+void maintain_heater(int currTemp, int currMillis, int dest_temp, int threshold, int oscillation_time, bool side) { // {{{
+  int heater = (side == left ? heater_left : heater_right );
   if (currTemp < threshold) {
-    on(heater_left);
-    heater_left_on = true;
+    on(heater);
+    heater_on = true;
   } else if (currTemp < dest_temp) {
-    if (abs( currMillis - last_switch ) > oscillation_time) {
-      last_switch = currMillis;
-      if (heater_left_on) {
-         off(heater_left);
-         heater_left_on = false;
+    if (abs( currMillis - last_heat_switch ) > oscillation_time) {
+      last_heat_switch = currMillis;
+      if (heater_on) {
+         off(heater);
+         heater_on = false;
       } else {
-         on(heater_left);
-         heater_left_on = true;
+         on(heater);
+         heater_on = true;
       }
     }
   } else {
-    off(heater_left);
-    heater_left_on = false;
+    off(heater);
+    heater_on = false;
   }
-}
+} // }}}
 
-// vim: ft=arduino
+void loop() { // {{{
+  int currTemp = analogRead(A0);
+  int currMillis = millis();
+  maintain_heater(currTemp, currMillis, 500, 300, 100, left);
+  maintain_stirrer(currMillis, 200, left);
+} // }}}
+
+// vim: ft=arduino foldmethod=marker
