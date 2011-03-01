@@ -161,10 +161,42 @@ void cocoa(int final_temp) { // {{{
   }
 } // }}}
 
+void cleanMode() { // {{{
+  // these will probably be proportional
+  int final_temp = 200;
+  int threshold  = final_temp;
+  int pump_time  = 5000;
+  int soak_time  = 15000;
+
+  // Heat left while stirring
+  if (state == 1) {
+     maintainHeater(final_temp, threshold, 100, LEFT);
+     maintainStirrer(200, LEFT);
+     // until we have soaked long enough
+     if (curr_millis - state_switch_time > soak_time) setState(state + 1);
+  // Pump left to right
+  } else if (state == 2) {
+     maintainPump(50, LEFT, RIGHT);
+     // for 5 seconds
+     if (curr_millis - state_switch_time > pump_time) setState(state + 1);
+  // Maintain heat right while stirring
+  } else if (state == 3) {
+     maintainHeater(final_temp, threshold, 100, RIGHT);
+     maintainStirrer(200, RIGHT);
+     // until we have soaked long enough
+     if (curr_millis - state_switch_time > soak_time) setState(state + 1);
+  // Pump right to left
+  } else if (state == 4) {
+     maintainPump(50, RIGHT, LEFT);
+     // for 5 seconds
+     if (curr_millis - state_switch_time > pump_time) setState(1);
+  }
+} // }}}
+
 void loop() { // {{{
   curr_temp = analogRead(A0) / 4; // max 256
   curr_millis = millis();
-  cocoa(200);
+  cleanMode();
 } // }}}
 
 // vim: ft=arduino foldmethod=marker
