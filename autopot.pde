@@ -111,7 +111,7 @@ void setState(int new_state) { // {{{
   off(PUMP_RIGHT);
 } // }}}
 
-void tea_or_coffee(int final_temp, int steep_time) { // {{{
+void teaOrCoffee(int final_temp, int steep_time) { // {{{
   // these will probably be proportional
   int threshold = final_temp - 20;
   int pump_time = 5000;
