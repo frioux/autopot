@@ -1,18 +1,18 @@
 #include <avr/pgmspace.h>
 
-const int heater_left PROGMEM = 9;
-const int heater_right =7;
+const int HEATER_LEFT = 9;
+const int HEATER_RIGHT = 7;
 
-const int cooler_right = 8;
+const int COOLER_RIGHT = 8;
 
-const int pump_left = 6;
-const int pump_right = 4;
+const int PUMP_LEFT = 6;
+const int PUMP_RIGHT = 4;
 
-const int stirrer_left = 5;
-const int stirrer_right = 3;
+const int STIRRER_LEFT = 5;
+const int STIRRER_RIGHT = 3;
 
-const bool left = false;
-const bool right = true;
+const bool LEFT = false;
+const bool RIGHT = true;
 
 
 int state = 1;
@@ -27,8 +27,8 @@ bool pump_on;
 int last_heat_switch;
 int last_stir_switch;
 int last_pump_switch;
-int currTemp = analogRead(A0) / 4; // max 256
-int currMillis = millis();
+int curr_temp = analogRead(A0) / 4; // max 256
+int curr_millis = millis();
 int state_switch_time;
 
 void on(int pin) { // {{{
@@ -40,20 +40,20 @@ void off(int pin) { // {{{
 } // }}}
 
 void setup() { // {{{
-  pinMode(heater_left, OUTPUT);
-  pinMode(cooler_right, OUTPUT);
-  pinMode(heater_right, OUTPUT);
-  pinMode(pump_left, OUTPUT);
-  pinMode(stirrer_left, OUTPUT);
-  pinMode(stirrer_right, OUTPUT);
-  pinMode(pump_right, OUTPUT);
+  pinMode(HEATER_LEFT, OUTPUT);
+  pinMode(COOLER_RIGHT, OUTPUT);
+  pinMode(HEATER_RIGHT, OUTPUT);
+  pinMode(PUMP_LEFT, OUTPUT);
+  pinMode(STIRRER_LEFT, OUTPUT);
+  pinMode(STIRRER_RIGHT, OUTPUT);
+  pinMode(PUMP_RIGHT, OUTPUT);
   last_heat_switch = millis();
 } // }}}
 
-void maintain_stirrer(int oscillation_time, bool side) { // {{{
-  int stirrer = (side == left ? stirrer_left : stirrer_right );
-  if (abs( currMillis - last_stir_switch ) > oscillation_time) {
-    last_stir_switch = currMillis;
+void maintainStirrer(int oscillation_time, bool side) { // {{{
+  int stirrer = (side == LEFT ? STIRRER_LEFT : STIRRER_RIGHT );
+  if (abs( curr_millis - last_stir_switch ) > oscillation_time) {
+    last_stir_switch = curr_millis;
     if (stirrer_on) {
        off(stirrer);
        stirrer_on = false;
@@ -64,14 +64,14 @@ void maintain_stirrer(int oscillation_time, bool side) { // {{{
   }
 } // }}}
 
-void maintain_heater(int dest_temp, int threshold, int oscillation_time, bool side) { // {{{
-  int heater = (side == left ? heater_left : heater_right );
-  if (currTemp < threshold) {
+void maintainHeater(int dest_temp, int threshold, int oscillation_time, bool side) { // {{{
+  int heater = (side == LEFT ? HEATER_LEFT : HEATER_RIGHT );
+  if (curr_temp < threshold) {
     on(heater);
     heater_on = true;
-  } else if (currTemp < dest_temp) {
-    if (abs( currMillis - last_heat_switch ) > oscillation_time) {
-      last_heat_switch = currMillis;
+  } else if (curr_temp < dest_temp) {
+    if (abs( curr_millis - last_heat_switch ) > oscillation_time) {
+      last_heat_switch = curr_millis;
       if (heater_on) {
          off(heater);
          heater_on = false;
@@ -86,10 +86,10 @@ void maintain_heater(int dest_temp, int threshold, int oscillation_time, bool si
   }
 } // }}}
 
-void maintain_pump(int oscillation_time, bool from, bool to) { // {{{
-  int pump = (from == left ? pump_left : pump_right );
-  if (abs( currMillis - last_pump_switch ) > oscillation_time) {
-    last_pump_switch = currMillis;
+void maintainPump(int oscillation_time, bool from, bool to) { // {{{
+  int pump = (from == LEFT ? PUMP_LEFT : PUMP_RIGHT );
+  if (abs( curr_millis - last_pump_switch ) > oscillation_time) {
+    last_pump_switch = curr_millis;
     if (pump_on) {
        off(pump);
        pump_on = false;
@@ -102,44 +102,44 @@ void maintain_pump(int oscillation_time, bool from, bool to) { // {{{
 
 void setState(int new_state) { // {{{
   state = new_state;
-  state_switch_time = currMillis;
-  off(heater_left);
-  off(cooler_right);
-  off(heater_right);
-  off(pump_left);
-  off(stirrer_left);
-  off(stirrer_right);
-  off(pump_right);
+  state_switch_time = curr_millis;
+  off(HEATER_LEFT);
+  off(COOLER_RIGHT);
+  off(HEATER_RIGHT);
+  off(PUMP_LEFT);
+  off(STIRRER_LEFT);
+  off(STIRRER_RIGHT);
+  off(PUMP_RIGHT);
 } // }}}
 
 void loop() { // {{{
-  currTemp = analogRead(A0) / 4; // max 256
-  currMillis = millis();
+  curr_temp = analogRead(A0) / 4; // max 256
+  curr_millis = millis();
   // Heat left while stirring
   if (state == 1) {
-     maintain_heater(212, 190, 100, left);
-     maintain_stirrer(200, left);
+     maintainHeater(212, 190, 100, LEFT);
+     maintainStirrer(200, LEFT);
      // Until we reach 212
-     if (currTemp >= 212) setState(state + 1);
+     if (curr_temp >= 212) setState(state + 1);
   // Pump left to right
   } else if (state == 2) {
-     maintain_pump(50, left, right);
+     maintainPump(50, LEFT, RIGHT);
      // for 5 seconds
-     if (currMillis - state_switch_time > 5000) setState(state + 1);
+     if (curr_millis - state_switch_time > 5000) setState(state + 1);
   // Maintain heat right while stirring
   } else if (state == 3) {
-     maintain_heater(212, 190, 100, right);
-     maintain_stirrer(200, right);
+     maintainHeater(212, 190, 100, RIGHT);
+     maintainStirrer(200, RIGHT);
      // for 10 seconds
-     if (currMillis - state_switch_time > 10000) setState(state + 1);
+     if (curr_millis - state_switch_time > 10000) setState(state + 1);
   // Pump right to left
   } else if (state == 4) {
-     maintain_pump(50, right, left);
+     maintainPump(50, RIGHT, LEFT);
      // for 5 seconds
-     if (currMillis - state_switch_time > 5000) setState(state + 1);
+     if (curr_millis - state_switch_time > 5000) setState(state + 1);
   } else if (state == 5) {
   // Maintain heat right while stirring
-     maintain_heater(212, 190, 100, left);
+     maintainHeater(212, 190, 100, LEFT);
   }
 } // }}}
 
